@@ -1,0 +1,9 @@
+{
+  "extends": "@owja/typescript-config",
+  "compilerOptions": {
+    "rootDir": "src"
+  },
+  "include": [
+    "src"
+  ]
+}

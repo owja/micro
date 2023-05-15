@@ -1,0 +1,42 @@
+{
+  "name": "@owja/micro",
+  "version": "1.0.0-alpha.1",
+  "description": "micro framework for web components",
+  "type": "module",
+  "source": "src/index.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "require": "./dist/index.cjs",
+    "default": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "microbundle --format cjs,esm",
+    "prettier": "prettier -c src/**/*",
+    "prettier:fix": "prettier -w src/**/*",
+    "prepack": "npm run prettier && npm run build",
+    "prebuild": "rm -rf dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@owja/browserslist-config": "^1.0.1",
+    "@owja/prettier-config": "^1.0.2",
+    "@owja/typescript-config": "^1.0.2",
+    "microbundle": "^0.15.1",
+    "typescript": "^5.0.0"
+  },
+  "prettier": "@owja/prettier-config",
+  "browserslist": [
+    "extends @owja/browserslist-config"
+  ],
+  "mangle": {
+    "regex": "^_"
+  },
+  "files": [
+    "/dist",
+    "/src"
+  ]
+}
