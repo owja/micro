@@ -2,12 +2,27 @@
   "name": "@owja/micro",
   "version": "1.0.0-alpha.1",
   "description": "micro framework for web components",
+  "keywords": [
+    "typescript",
+    "webcomponents",
+    "micro",
+    "framework"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/owja/micro.git"
+  },
+  "bugs": {
+    "url": "https://github.com/owja/micro/issues"
+  },
+  "homepage": "https://github.com/owja/micro",
+  "author": "Hauke Broer <info@owja.de>",
   "type": "module",
   "source": "src/index.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "exports": {
-    "types": "./dist/index.d.ts",
     "require": "./dist/index.cjs",
     "default": "./dist/index.js"
   },
@@ -18,9 +33,7 @@
     "prepack": "npm run prettier && npm run build",
     "prebuild": "rm -rf dist"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@owja/browserslist-config": "^1.0.1",
     "@owja/prettier-config": "^1.0.2",
