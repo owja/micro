@@ -1,62 +1,7 @@
-type Parameters = Record<string, string | number>;
-
-type WithWebservice = {
-    ws: WebService;
-    parameters?: Parameters;
-};
-
-type WithHeaders = {
-    headers?: HeadersInit;
-    parameters?: Parameters;
-};
-
-type Options = WithWebservice | WithHeaders;
-
-type Callback = () => void;
-
-function isWithWebservice(obj: Options | undefined): obj is WithWebservice {
-    return !!obj && obj.hasOwnProperty("ws");
-}
-
-export function createRefresh<Response>(
-    path: string,
-    seconds: number,
-    callback: (response: Response) => void | Promise<void>,
-    options?: Options,
-): {pause: Callback; resume: Callback} {
-    const webService = isWithWebservice(options) ? options.ws : new WebService(options?.headers, options?.parameters);
-
-    let running = true;
-    let timeout: NodeJS.Timeout;
-
-    function refresh() {
-        webService
-            .get<Response>(path, isWithWebservice(options) ? options?.parameters : {})
-            .then(async (response) => {
-                running && (await callback(response));
-                running && (timeout = setTimeout(() => running && refresh(), seconds * 1000));
-            })
-            .catch(() => undefined);
-    }
-
-    refresh();
-
-    return {
-        pause: () => {
-            running = false;
-            clearTimeout(timeout);
-        },
-        resume: () => {
-            if (!running) {
-                running = true;
-                refresh();
-            }
-        },
-    };
-}
+export type Parameters = Record<string, string | number>;
 
 export class WebService {
-    constructor(public headers?: HeadersInit, public parameters?: Parameters) {}
+    constructor(public headers?: HeadersInit, public parameters: Parameters = {}) {}
 
     get<Response>(path: string, parameters: Parameters = {}) {
         return this._request<Response>(this._url(path, parameters), "GET", this.headers);
@@ -97,9 +42,10 @@ export class WebService {
 
     private _url(path: string, parameters: Parameters = {}) {
         const url = new URL(path);
+        const params = {...parameters, ...this.parameters};
 
-        for (const parameter in {...parameters, ...this.parameters}) {
-            url.searchParams.set(parameter, parameters[parameter].toString());
+        for (const parameter in params) {
+            url.searchParams.set(parameter, params[parameter].toString());
         }
 
         return url;
