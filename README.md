@@ -14,32 +14,30 @@ is to have everything needed to create small widgets.
 import {Micro} from "@owja/micro";
 
 class MyComponent extends Micro {
-  wrapper = Micro.createRef<HTMLDivElement>();
-
-  constructor() {
-    super(`
-        .wrapper {
-            color: red;
-            cursor: pointer;
-        }
-        .clicked {
-            color: green;
-        }
-    `);
-    
-    Micro.create("div", this.root, {
-        class: "wrapper",
-        listener: {
-            click: () => this.wrapper.current?.classList.toggle("clicked")
-        },
-        ref: this.wrapper,
-        content: [
-            Micro.create("span", {
-                content: "Hello World"
-            })
-        ],
-    });
-  }
+    wrapper = Micro.createRef<HTMLDivElement>();
+  
+    constructor() {
+        super(`
+            .wrapper {
+                color: red;
+                cursor: pointer;
+            }
+            .clicked {
+                color: green;
+            }
+        `);
+        
+        Micro.create("div", {
+            target: this.root,
+            class: "wrapper",
+            listener: {
+                click: () => this.wrapper.current?.classList.toggle("clicked")
+            },
+            ref: this.wrapper,
+        }, [
+          Micro.create("span", "Hello World"),
+        ]);
+    }
 }
 
 customElements.define("my-component", MyComponent);
