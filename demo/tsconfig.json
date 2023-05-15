@@ -1,8 +1,7 @@
 {
   "extends": "@owja/typescript-config",
   "compilerOptions": {
-    "rootDir": "src",
-    "moduleResolution": "node"
+    "rootDir": "src"
   },
   "include": [
     "src"
