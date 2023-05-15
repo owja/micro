@@ -10,8 +10,8 @@ function isContent(value: any): value is Content {
 type Options<Element> = {
     id?: true | string;
     class?: string;
-    content?: Content;
     props?: PropertyFilter<Element>;
+    target?: HTMLElement | ShadowRoot;
     attr?: {[key: string]: string};
     listener?: {[K in keyof HTMLElementEventMap]?: (this: Element, ev: HTMLElementEventMap[K]) => any};
     ref?: Reference<Element> | ((el: Element) => any);
@@ -27,7 +27,7 @@ export abstract class Micro extends HTMLElement {
     constructor(styles?: string) {
         super();
         this.attachShadow({mode: "open"});
-        styles && this.root.append(Micro.create("style", {content: styles}));
+        styles && Micro.create("style", {target: this.root}, styles);
     }
 
     static create<K extends keyof HTMLElementTagNameMap>(tagName: K): HTMLElementTagNameMap[K];
@@ -43,27 +43,6 @@ export abstract class Micro extends HTMLElement {
     ): HTMLElementTagNameMap[K];
     static create<K extends keyof HTMLElementTagNameMap>(
         tagName: K,
-        target: HTMLElement | ShadowRoot,
-    ): HTMLElementTagNameMap[K];
-    static create<K extends keyof HTMLElementTagNameMap>(
-        tagName: K,
-        target: HTMLElement | ShadowRoot,
-        options: ElementCreationOptions & Options<HTMLElementTagNameMap[K]>,
-    ): HTMLElementTagNameMap[K];
-    static create<K extends keyof HTMLElementTagNameMap>(
-        tagName: K,
-        target: HTMLElement | ShadowRoot,
-        content: Content,
-    ): HTMLElementTagNameMap[K];
-    static create<K extends keyof HTMLElementTagNameMap>(
-        tagName: K,
-        target: HTMLElement | ShadowRoot,
-        options: Omit<ElementCreationOptions & Options<HTMLElementTagNameMap[K]>, "content">,
-        content: Content,
-    ): HTMLElementTagNameMap[K];
-    static create<K extends keyof HTMLElementTagNameMap>(
-        tagName: K,
-        target?: HTMLElement | ShadowRoot | (ElementCreationOptions & Options<HTMLElementTagNameMap[K]>) | Content,
         options?: (ElementCreationOptions & Options<HTMLElementTagNameMap[K]>) | Content,
         content?: Content,
     ): HTMLElementTagNameMap[K] {
@@ -72,24 +51,7 @@ export abstract class Micro extends HTMLElement {
             options = undefined;
         }
 
-        if (isContent(target)) {
-            content = target;
-            target = undefined;
-        }
-
-        if (!(target instanceof HTMLElement || target instanceof ShadowRoot)) {
-            options = target;
-            target = undefined;
-        }
-
-        if (!content) {
-            content = options?.content;
-        }
-
-        console.log(target, options, content);
-
-        // HTMLElement type just because IDE is annoying ^^
-        const el: HTMLElementTagNameMap[K] = document.createElement(tagName, {is: options?.is});
+        const el = document.createElement(tagName, {is: options?.is});
 
         if (options?.class) {
             el.classList.add(options.class);
@@ -132,22 +94,20 @@ export abstract class Micro extends HTMLElement {
             typeof options.ref === "function" ? options.ref(el) : (options.ref.current = el);
         }
 
-        target?.append(el);
+        options?.target?.append(el);
         return el;
     }
 
-    static clear(elements: Element | Element[] | ShadowRoot | null, removeStyleElements = false) {
-        if (!elements) return;
+    static clear(el: Element | ShadowRoot | null, keepStyles = true) {
+        if (!el) return;
 
-        for (const el of Array.isArray(elements) ? elements : [elements]) {
-            const keep: Element[] = [];
-            while (el.lastChild) {
-                const child = el.lastChild;
-                !removeStyleElements && child instanceof HTMLStyleElement && keep.push(child);
-                el.removeChild(child);
-            }
-            keep.length && el.append(...keep);
+        const keep: Element[] = [];
+        while (el.lastChild) {
+            const child = el.lastChild;
+            keepStyles && child instanceof HTMLStyleElement && keep.push(child);
+            el.removeChild(child);
         }
+        keep.length && el.append(...keep);
     }
 
     static generateId(): string {
