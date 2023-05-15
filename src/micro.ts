@@ -2,10 +2,15 @@ import type {PropertyFilter} from "./property-filter";
 
 type Reference<R> = {current: R | undefined};
 
+type Content = HTMLElement[] | string;
+function isContent(value: any): value is Content {
+    return typeof value === "string" || Array.isArray(value);
+}
+
 type Options<Element> = {
     id?: true | string;
     class?: string;
-    content?: HTMLElement[] | string;
+    content?: Content;
     props?: PropertyFilter<Element>;
     attr?: {[key: string]: string};
     listener?: {[K in keyof HTMLElementEventMap]?: (this: Element, ev: HTMLElementEventMap[K]) => any};
@@ -26,24 +31,62 @@ export abstract class Micro extends HTMLElement {
     }
 
     static create<K extends keyof HTMLElementTagNameMap>(tagName: K): HTMLElementTagNameMap[K];
+    static create<K extends keyof HTMLElementTagNameMap>(tagName: K, content: Content): HTMLElementTagNameMap[K];
     static create<K extends keyof HTMLElementTagNameMap>(
         tagName: K,
         options: ElementCreationOptions & Options<HTMLElementTagNameMap[K]>,
     ): HTMLElementTagNameMap[K];
     static create<K extends keyof HTMLElementTagNameMap>(
         tagName: K,
-        target: HTMLElement | ShadowRoot,
-        options?: ElementCreationOptions & Options<HTMLElementTagNameMap[K]>,
+        options: Omit<ElementCreationOptions & Options<HTMLElementTagNameMap[K]>, "content">,
+        content: Content,
     ): HTMLElementTagNameMap[K];
     static create<K extends keyof HTMLElementTagNameMap>(
         tagName: K,
-        target?: HTMLElement | ShadowRoot | (ElementCreationOptions & Options<HTMLElementTagNameMap[K]>),
-        options?: ElementCreationOptions & Options<HTMLElementTagNameMap[K]>,
+        target: HTMLElement | ShadowRoot,
+    ): HTMLElementTagNameMap[K];
+    static create<K extends keyof HTMLElementTagNameMap>(
+        tagName: K,
+        target: HTMLElement | ShadowRoot,
+        options: ElementCreationOptions & Options<HTMLElementTagNameMap[K]>,
+    ): HTMLElementTagNameMap[K];
+    static create<K extends keyof HTMLElementTagNameMap>(
+        tagName: K,
+        target: HTMLElement | ShadowRoot,
+        content: Content,
+    ): HTMLElementTagNameMap[K];
+    static create<K extends keyof HTMLElementTagNameMap>(
+        tagName: K,
+        target: HTMLElement | ShadowRoot,
+        options: Omit<ElementCreationOptions & Options<HTMLElementTagNameMap[K]>, "content">,
+        content: Content,
+    ): HTMLElementTagNameMap[K];
+    static create<K extends keyof HTMLElementTagNameMap>(
+        tagName: K,
+        target?: HTMLElement | ShadowRoot | (ElementCreationOptions & Options<HTMLElementTagNameMap[K]>) | Content,
+        options?: (ElementCreationOptions & Options<HTMLElementTagNameMap[K]>) | Content,
+        content?: Content,
     ): HTMLElementTagNameMap[K] {
+        if (isContent(options)) {
+            content = options;
+            options = undefined;
+        }
+
+        if (isContent(target)) {
+            content = target;
+            target = undefined;
+        }
+
         if (!(target instanceof HTMLElement || target instanceof ShadowRoot)) {
             options = target;
             target = undefined;
         }
+
+        if (!content) {
+            content = options?.content;
+        }
+
+        console.log(target, options, content);
 
         // HTMLElement type just because IDE is annoying ^^
         const el: HTMLElementTagNameMap[K] = document.createElement(tagName, {is: options?.is});
@@ -53,11 +96,11 @@ export abstract class Micro extends HTMLElement {
         }
 
         // because we ignore empty strings check for length covers all cases
-        if (options?.content?.length) {
-            if (typeof options.content === "string") {
-                el.textContent = options.content;
+        if (content?.length) {
+            if (typeof content === "string") {
+                el.textContent = content;
             } else {
-                el.append(...options.content);
+                el.append(...content);
             }
         }
 
@@ -93,14 +136,17 @@ export abstract class Micro extends HTMLElement {
         return el;
     }
 
-    static clear(elements: Element | null | Element[], removeStyleElements = false) {
+    static clear(elements: Element | Element[] | ShadowRoot | null, removeStyleElements = false) {
         if (!elements) return;
 
         for (const el of Array.isArray(elements) ? elements : [elements]) {
-            while (el.firstChild) {
-                const child = el.lastChild!;
-                removeStyleElements || (!(child instanceof HTMLStyleElement) && el.removeChild(child));
+            const keep: Element[] = [];
+            while (el.lastChild) {
+                const child = el.lastChild;
+                !removeStyleElements && child instanceof HTMLStyleElement && keep.push(child);
+                el.removeChild(child);
             }
+            keep.length && el.append(...keep);
         }
     }
 
