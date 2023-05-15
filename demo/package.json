@@ -5,10 +5,11 @@
     "express": "^4.18.2"
   },
   "source": "src/demos.ts",
-  "exports": "./dist/demos.mjs",
+  "exports": "./dist/demos.js",
   "scripts": {
     "start": "npm run build && npm run serve",
-    "build": "microbundle -f modern --sourcemap false --generateTypes false --external none",
+    "build": "microbundle build -f modern --sourcemap true --generateTypes false --external none --css inline",
+    "watch": "microbundle watch -f modern --sourcemap true --generateTypes false --external none --css inline",
     "serve": "node serve.js"
   },
   "devDependencies": {

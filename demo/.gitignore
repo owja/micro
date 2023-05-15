@@ -1,3 +1,4 @@
 node_modules
 package-lock.json
-dist/demos.mjs
+dist
+!dist/index.html
