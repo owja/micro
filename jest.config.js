@@ -5,7 +5,5 @@ module.exports = {
     reporters: ["summary"],
     coverageReporters: ["text-summary"],
     coverageProvider: "v8",
-    collectCoverageFrom: [
-        'src/**/*.{ts,js,tsx}',
-    ],
+    collectCoverageFrom: ["src/**/*.{ts,js,tsx}"],
 };
