@@ -28,8 +28,9 @@
   },
   "scripts": {
     "build": "microbundle --format cjs,esm",
-    "prettier": "prettier -c src/**/* demo/src/**/*",
-    "prettier:fix": "prettier -w src/**/* demo/src/**/*",
+    "test": "jest",
+    "prettier": "prettier -c ./",
+    "prettier:fix": "prettier -w ./",
     "prepack": "npm run prettier && npm run build",
     "prebuild": "rm -rf dist"
   },
