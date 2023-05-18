@@ -31,9 +31,9 @@
     "test:ci": "jest --reporters jest-junit summary --collectCoverage --coverageReporters cobertura text-summary",
     "prettier": "prettier -c ./",
     "prettier:fix": "prettier -w ./",
-    "prepack": "npm run prettier && npm run build",
     "prebuild": "rm -rf dist",
-    "prepare": "husky install"
+    "prepack": "npm run prettier",
+    "prepare": "husky install && npm run build"
   },
   "license": "MIT",
   "devDependencies": {
