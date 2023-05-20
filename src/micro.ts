@@ -20,13 +20,11 @@ type Options<Element> = {
 let CurrentId = 0;
 
 export abstract class Micro extends HTMLElement {
-    protected get root(): ShadowRoot {
-        return this.shadowRoot!;
-    }
+    protected root: ShadowRoot;
 
-    constructor(styles?: string) {
+    constructor(styles?: string, mode: "open" | "closed" = "open") {
         super();
-        this.attachShadow({mode: "open"});
+        this.root = this.attachShadow({mode});
         styles && Micro.create("style", {target: this.root}, styles);
     }
 
