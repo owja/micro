@@ -2,9 +2,9 @@ import type {PropertyFilter} from "./property-filter";
 
 type Reference<R> = {current: R | undefined};
 
-type Content = HTMLElement[] | string;
+type Content = Element | Element[] | string;
 function isContent(value: any): value is Content {
-    return typeof value === "string" || Array.isArray(value);
+    return typeof value === "string" || Array.isArray(value) || value instanceof Element;
 }
 
 type Options<Element> = {
@@ -53,12 +53,13 @@ export abstract class Micro extends HTMLElement {
             el.classList.add(options.class);
         }
 
-        // because we ignore empty strings check for length covers all cases
-        if (content.length) {
+        if (content) {
             if (typeof content === "string") {
                 el.textContent = content;
-            } else {
+            } else if (Array.isArray(content)) {
                 el.append(...content);
+            } else if (content) {
+                el.append(content);
             }
         }
 
