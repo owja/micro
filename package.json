@@ -52,7 +52,7 @@
   },
   "prettier": "@owja/prettier-config",
   "lint-staged": {
-    "*": "npm run prettier"
+    "*": "prettier"
   },
   "browserslist": [
     "extends @owja/browserslist-config"
