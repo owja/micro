@@ -24,7 +24,7 @@ export abstract class Micro extends HTMLElement {
         return this.shadowRoot!;
     }
 
-    constructor(styles?: string) {
+    protected constructor(styles?: string) {
         super();
         this.attachShadow({mode: "open"});
         styles && Micro.create("style", {target: this.root}, styles);
@@ -35,30 +35,26 @@ export abstract class Micro extends HTMLElement {
     static create<K extends keyof HTMLElementTagNameMap>(
         tagName: K,
         options: ElementCreationOptions & Options<HTMLElementTagNameMap[K]>,
-    ): HTMLElementTagNameMap[K];
-    static create<K extends keyof HTMLElementTagNameMap>(
-        tagName: K,
-        options: Omit<ElementCreationOptions & Options<HTMLElementTagNameMap[K]>, "content">,
-        content: Content,
-    ): HTMLElementTagNameMap[K];
-    static create<K extends keyof HTMLElementTagNameMap>(
-        tagName: K,
-        options?: (ElementCreationOptions & Options<HTMLElementTagNameMap[K]>) | Content,
         content?: Content,
+    ): HTMLElementTagNameMap[K];
+    static create<K extends keyof HTMLElementTagNameMap>(
+        tagName: K,
+        options: (ElementCreationOptions & Options<HTMLElementTagNameMap[K]>) | Content = {},
+        content: Content = "",
     ): HTMLElementTagNameMap[K] {
         if (isContent(options)) {
             content = options;
-            options = undefined;
+            options = {};
         }
 
         const el = document.createElement(tagName, {is: options?.is});
 
-        if (options?.class) {
+        if (options.class) {
             el.classList.add(options.class);
         }
 
         // because we ignore empty strings check for length covers all cases
-        if (content?.length) {
+        if (content.length) {
             if (typeof content === "string") {
                 el.textContent = content;
             } else {
@@ -66,35 +62,35 @@ export abstract class Micro extends HTMLElement {
             }
         }
 
-        if (options?.id) {
+        if (options.id) {
             el.id = options.id === true ? Micro.generateId() : options.id;
         }
 
-        if (options?.listener) {
+        if (options.listener) {
             for (const key in options.listener) {
                 // @ts-ignore could not find another solution
                 el.addEventListener(key, options.listener[key]);
             }
         }
 
-        if (options?.props) {
+        if (options.props) {
             for (const key in options.props) {
                 // @ts-ignore and again, could not find another solution (for now)
                 el[key] = options.props[key];
             }
         }
 
-        if (options?.attr) {
+        if (options.attr) {
             for (const key in options.attr) {
                 el.setAttribute(key, options.attr[key]);
             }
         }
 
-        if (options?.ref) {
+        if (options.ref) {
             typeof options.ref === "function" ? options.ref(el) : (options.ref.current = el);
         }
 
-        options?.target?.append(el);
+        options.target?.append(el);
         return el;
     }
 
