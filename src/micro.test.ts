@@ -11,7 +11,7 @@ describe("Class Micro", () => {
             expect(el.shadowRoot!.children).toHaveLength(0);
         });
 
-        test("without passing styles", () => {
+        test("with styles", () => {
             const styles = "div { color: green }";
             customElements.define(
                 "test-with-styles",
@@ -248,6 +248,22 @@ describe("Class Micro", () => {
 
         test("can create a ref object with a default value", () => {
             expect(Micro.createRef("hello world").current).toBe("hello world");
+        });
+    });
+
+    describe("static method generateId()", () => {
+        test("will not generate the same id", () => {
+            expect(Micro.generateId()).not.toBe(Micro.generateId());
+        });
+
+        test("will start with string 'gid' followed by numbers", () => {
+            expect(Micro.generateId()).toMatch(/^gid\d+$/);
+        });
+
+        test("the number should increase by one each call", () => {
+            const id1 = parseInt(/\d+$/.exec(Micro.generateId())?.[0] || "0");
+            const id2 = parseInt(/\d+$/.exec(Micro.generateId())?.[0] || "0");
+            expect(id1 + 1).toBe(id2);
         });
     });
 });
