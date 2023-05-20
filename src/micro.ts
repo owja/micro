@@ -24,7 +24,7 @@ export abstract class Micro extends HTMLElement {
         return this.shadowRoot!;
     }
 
-    protected constructor(styles?: string) {
+    constructor(styles?: string) {
         super();
         this.attachShadow({mode: "open"});
         styles && Micro.create("style", {target: this.root}, styles);
