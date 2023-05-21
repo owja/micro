@@ -13,7 +13,8 @@ export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
     constructor(
         public path: string,
         public options: Options<RequestBody> = {},
-        private _callback: (data: ResponseData) => any,
+        private _onSuccess: (data: ResponseData) => any,
+        private _onError: (reason: any) => any,
     ) {}
 
     private _fetch() {
@@ -33,10 +34,10 @@ export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
             signal: this._controller.signal,
         })
             .then(async (response) => {
-                response.ok && this._callback && (await this._callback(await response.json()));
+                response.ok && this._onSuccess && (await this._onSuccess(await response.json()));
             })
-            .catch(() => {
-                /* ignoring all errors */
+            .catch((reason) => {
+                this._onError && this._onError(reason);
             })
             .finally(() => {
                 delete this._controller;
@@ -44,6 +45,11 @@ export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
                     this._timeout = setTimeout(() => this._fetch(), this._refresh);
                 }
             });
+    }
+
+    once() {
+        this.stop();
+        this._fetch();
     }
 
     start(refresh: number) {
