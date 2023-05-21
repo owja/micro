@@ -1,6 +1,6 @@
 {
   "name": "@owja/micro",
-  "version": "1.0.0-alpha.5",
+  "version": "1.0.0-alpha.6",
   "description": "micro framework for web components",
   "keywords": [
     "typescript",
@@ -32,7 +32,7 @@
     "test:ci": "jest --reporters jest-junit summary --collectCoverage --coverageReporters cobertura text-summary",
     "prettier": "prettier -c ./",
     "prettier:fix": "prettier -w ./",
-    "prepack": "npm run prettier",
+    "prepack": "npm run prettier && jest",
     "prepare": "husky install && rm -rf dist && npm run build"
   },
   "license": "MIT",
