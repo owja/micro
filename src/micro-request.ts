@@ -27,7 +27,6 @@ export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
         }
 
         this._controller = new AbortController();
-        let refresh: number | undefined;
 
         fetch(url, {
             headers,
@@ -37,19 +36,16 @@ export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
         })
             .then(async (response) => {
                 response.ok && this._onSuccess && (await this._onSuccess(await response.json()));
-                refresh = this._refresh;
+                if (this._refresh) {
+                    this._timeout = setTimeout(() => this._fetch(), this._refresh);
+                }
             })
             .catch((reason) => {
                 if (reason?.name === "AbortError") return;
                 this._onError && this._onError(reason);
                 const retry = this.options.retry === undefined ? 5000 : this.options.retry;
                 if (retry) {
-                    refresh = retry;
-                }
-            })
-            .finally(() => {
-                if (refresh) {
-                    this._timeout = setTimeout(() => this._fetch(), refresh);
+                    this._timeout = setTimeout(() => this._fetch(), retry);
                 }
             });
     }
