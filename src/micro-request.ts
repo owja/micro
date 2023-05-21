@@ -2,6 +2,7 @@ export interface Options<RequestBody> {
     headers?: HeadersInit;
     params?: Record<string, string | number>;
     method?: "GET" | "PUT" | "POST" | "DELETE";
+    retry?: number;
     body?: RequestBody;
 }
 
@@ -26,6 +27,7 @@ export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
         }
 
         this._controller = new AbortController();
+        let retrying = false;
 
         fetch(url, {
             headers,
@@ -38,10 +40,15 @@ export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
             })
             .catch((reason) => {
                 this._onError && this._onError(reason);
+                const retry = this.options.retry === undefined ? 5000 : this.options.retry;
+                if (retry) {
+                    retrying = true;
+                    this._timeout = setTimeout(() => this._fetch(), retry);
+                }
             })
             .finally(() => {
                 delete this._controller;
-                if (this._refresh) {
+                if (this._refresh && !retrying) {
                     this._timeout = setTimeout(() => this._fetch(), this._refresh);
                 }
             });
