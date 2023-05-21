@@ -19,21 +19,21 @@
   "author": "Hauke Broer <info@owja.de>",
   "source": "src/index.ts",
   "types": "dist/index.d.ts",
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "exports": {
-    "require": "./dist/index.cjs",
-    "default": "./dist/index.js"
+    "require": "./dist/index.js",
+    "default": "./dist/index.mjs"
   },
   "scripts": {
     "build": "microbundle --format cjs,esm",
+    "watch": "microbundle --watch --format cjs,esm",
     "test": "jest --collectCoverage --coverageReporters html text",
     "test:ci": "jest --reporters jest-junit summary --collectCoverage --coverageReporters cobertura text-summary",
     "prettier": "prettier -c ./",
     "prettier:fix": "prettier -w ./",
-    "prebuild": "rm -rf dist",
     "prepack": "npm run prettier",
-    "prepare": "husky install && npm run build"
+    "prepare": "husky install && rm -rf dist && npm run build"
   },
   "license": "MIT",
   "devDependencies": {
