@@ -1,4 +1,4 @@
-import {createRefresh, Micro} from "@owja/micro";
+import {MicroRequest, Micro} from "@owja/micro";
 import styles from "./my-component.css";
 
 type HttpBinGetResponse = {
@@ -9,15 +9,31 @@ type HttpBinGetResponse = {
 };
 
 class MyComponent extends Micro {
-    removeMe = Micro.createRef<HTMLDivElement>();
+    private removeMe = Micro.createRef<HTMLDivElement>();
+    private ws?: MicroRequest<HttpBinGetResponse>;
 
     constructor() {
         super(styles);
+    }
 
-        createRefresh<HttpBinGetResponse>("https://httpbin.org/get", 60, (r) => this.render(r), {
-            parameters: {hello: "hello args"},
-            headers: {Hello: "hello headers"},
-        });
+    disconnectedCallback() {
+        this.ws?.stop();
+        delete this.ws;
+    }
+
+    connectedCallback() {
+        this.ws = new MicroRequest<HttpBinGetResponse>(
+            "https://httpbin.org/get",
+            {
+                params: {
+                    get datetime() {
+                        return new Date().toLocaleString();
+                    },
+                },
+                headers: {Hello: "hello headers"},
+            },
+            (data) => this.render(data),
+        ).start(60 * 1000);
     }
 
     render(r: HttpBinGetResponse) {
@@ -39,7 +55,7 @@ class MyComponent extends Micro {
                 Micro.create("div", {ref: this.removeMe}, "Remove Me! (click)"),
                 Micro.create("div", `Your IP: ${r.origin}`),
                 Micro.create("div", `Origin: ${r.headers["Origin"]}`),
-                Micro.create("div", `Test Arg: ${r.args["hello"]}`),
+                Micro.create("div", `Test Datetime via Args: ${r.args["datetime"]}`),
                 Micro.create("div", `Test Header: ${r.headers["Hello"]}`),
             ],
         );
