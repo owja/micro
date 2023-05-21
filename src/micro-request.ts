@@ -27,6 +27,7 @@ export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
         }
 
         this._controller = new AbortController();
+        const initRefresh = (refresh?: number) => refresh && setTimeout(() => this._fetch(), refresh);
 
         fetch(url, {
             headers,
@@ -40,16 +41,11 @@ export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
                 // 1. it should delay the refresh
                 // 2. to catch errors thrown inside the callback
                 this._onSuccess && (await this._onSuccess(await response.json()).catch(() => {}));
-                if (this._refresh) {
-                    this._timeout = setTimeout(() => this._fetch(), this._refresh);
-                }
+                initRefresh(this._refresh);
             })
             .catch((reason) => {
                 if (reason?.name === "AbortError") return;
-                const retry = this.options.retry === undefined ? 5000 : this.options.retry;
-                if (retry) {
-                    this._timeout = setTimeout(() => this._fetch(), retry);
-                }
+                initRefresh(this.options.retry === undefined ? 5000 : this.options.retry);
                 this._onError && this._onError(reason);
             });
     }
