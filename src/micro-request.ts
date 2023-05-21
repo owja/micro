@@ -35,18 +35,22 @@ export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
             signal: this._controller.signal,
         })
             .then(async (response) => {
-                response.ok && this._onSuccess && (await this._onSuccess(await response.json()));
+                if (!response.ok) throw new Error(response.statusText);
+                // we wrap the callback for two reasons:
+                // 1. it should delay the refresh
+                // 2. to catch errors thrown inside the callback
+                this._onSuccess && (await this._onSuccess(await response.json()).catch(() => {}));
                 if (this._refresh) {
                     this._timeout = setTimeout(() => this._fetch(), this._refresh);
                 }
             })
             .catch((reason) => {
                 if (reason?.name === "AbortError") return;
-                this._onError && this._onError(reason);
                 const retry = this.options.retry === undefined ? 5000 : this.options.retry;
                 if (retry) {
                     this._timeout = setTimeout(() => this._fetch(), retry);
                 }
+                this._onError && this._onError(reason);
             });
     }
 
