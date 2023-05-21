@@ -46,18 +46,16 @@ export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
             });
     }
 
-    start(refresh: number): MicroRequest<ResponseData, RequestBody> {
+    start(refresh: number) {
         this.stop();
         this._refresh = refresh;
         refresh && this._fetch();
-        return this;
     }
 
-    stop(): MicroRequest<ResponseData, RequestBody> {
+    stop() {
         delete this._refresh;
         clearTimeout(this._timeout);
         this._controller?.abort();
         delete this._controller;
-        return this;
     }
 }

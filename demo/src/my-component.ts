@@ -10,18 +10,11 @@ type HttpBinGetResponse = {
 
 class MyComponent extends Micro {
     private removeMe = Micro.createRef<HTMLDivElement>();
-    private ws?: MicroRequest<HttpBinGetResponse>;
+    private ws: MicroRequest<HttpBinGetResponse>;
 
     constructor() {
         super(styles);
-    }
 
-    disconnectedCallback() {
-        this.ws?.stop();
-        delete this.ws;
-    }
-
-    connectedCallback() {
         this.ws = new MicroRequest<HttpBinGetResponse>(
             "https://httpbin.org/get",
             {
@@ -33,7 +26,15 @@ class MyComponent extends Micro {
                 headers: {Hello: "hello headers"},
             },
             (data) => this.render(data),
-        ).start(60 * 1000);
+        );
+    }
+
+    disconnectedCallback() {
+        this.ws.stop();
+    }
+
+    connectedCallback() {
+        this.ws.start(60 * 1000);
     }
 
     render(r: HttpBinGetResponse) {
