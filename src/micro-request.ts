@@ -15,7 +15,7 @@ export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
         public path: string,
         public options: Options<RequestBody> = {},
         private _onSuccess: (data: ResponseData) => any,
-        private _onError: (reason: any) => any,
+        private _onError?: (reason: any) => any,
     ) {}
 
     private _fetch() {
@@ -40,7 +40,12 @@ export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
                 // we wrap the callback for two reasons:
                 // 1. it should delay the refresh
                 // 2. to catch errors thrown inside the callback
-                this._onSuccess && (await this._onSuccess(await response.json()).catch(() => {}));
+                // ToDo Make it better
+                try {
+                    this._onSuccess && (await this._onSuccess(await response.json()));
+                } catch (e) {
+                    console.error(e);
+                }
                 initRefresh(this._refresh);
             })
             .catch((reason) => {

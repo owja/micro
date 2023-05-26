@@ -113,7 +113,7 @@ export abstract class Micro extends HTMLElement {
         const el = document.createElement(tagName, {is: options.is});
 
         if (options.class) {
-            el.classList.add(options.class);
+            el.className = options.class;
         }
 
         if (content) {
