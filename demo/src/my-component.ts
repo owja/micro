@@ -15,9 +15,11 @@ class MyComponent extends Micro {
     constructor() {
         super(styles);
 
+        Micro.create("span", {target: this.root}, "loading...");
+
         this.ws = new MicroRequest<HttpBinGetResponse>(
-            "https://httpbin.org/get",
             {
+                path: "https://httpbin.org/get",
                 params: {
                     get datetime() {
                         return new Date().toLocaleString();

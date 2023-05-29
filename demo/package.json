@@ -17,5 +17,11 @@
     "@owja/micro": "^1.0.0-alpha.1",
     "@owja/typescript-config": "^1.0.2",
     "microbundle": "^0.15.1"
+  },
+  "browserslist": [
+    "extends @owja/browserslist-config"
+  ],
+  "mangle": {
+    "regex": "^_"
   }
 }

@@ -1,4 +1,5 @@
 export interface Options<RequestBody> {
+    path: string;
     headers?: HeadersInit;
     params?: Record<string, string | number>;
     method?: "GET" | "PUT" | "POST" | "DELETE";
@@ -6,64 +7,67 @@ export interface Options<RequestBody> {
     body?: RequestBody;
 }
 
+const DEFAULT_RETRY_DELAY = 5000;
+
 export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
     private _refresh?: number;
     private _controller?: AbortController;
     private _timeout?: NodeJS.Timeout;
 
     constructor(
-        public path: string,
-        public options: Options<RequestBody> = {},
-        private _onSuccess: (data: ResponseData) => any,
+        private _options: Options<RequestBody>,
+        private _onSuccess?: (data: ResponseData) => any,
         private _onError?: (reason: any) => any,
     ) {}
 
-    private _fetch() {
-        const {headers, method, body, params} = this.options || {};
+    private _fetch(): Promise<ResponseData | void> {
+        const {path, headers, method, body, params} = this._options;
 
-        const url = new URL(this.path);
+        const url = new URL(path);
         for (const key in params) {
             url.searchParams.set(key, params[key].toString());
         }
 
         this._controller = new AbortController();
-        const initRefresh = (refresh?: number) => refresh && setTimeout(() => this._fetch(), refresh);
+        const initRefresh = (refresh?: number) =>
+            refresh && this._onSuccess && setTimeout(() => this._fetch(), refresh);
 
-        fetch(url, {
+        return fetch(url.toString(), {
             headers,
             method,
-            body: body ? JSON.stringify(body) : undefined,
             signal: this._controller.signal,
+            ...(body ? {body: JSON.stringify(body)} : undefined),
         })
-            .then(async (response) => {
+            .then(async (response): Promise<ResponseData | void> => {
                 if (!response.ok) throw new Error(response.statusText);
-                // we wrap the callback for two reasons:
-                // 1. it should delay the refresh
-                // 2. to catch errors thrown inside the callback
-                // ToDo Make it better
+                let result: ResponseData | void;
                 try {
-                    this._onSuccess && (await this._onSuccess(await response.json()));
+                    // MicroRequest only supports json,
+                    // and it catches errors here to prevent
+                    // the retry
+                    result = await response.json();
+                    this._onSuccess?.(result!);
                 } catch (e) {
                     console.error(e);
                 }
                 initRefresh(this._refresh);
+                return result;
             })
             .catch((reason) => {
                 if (reason?.name === "AbortError") return;
-                initRefresh(this.options.retry === undefined ? 5000 : this.options.retry);
-                this._onError && this._onError(reason);
+                initRefresh(this._options.retry === undefined ? DEFAULT_RETRY_DELAY : this._options.retry);
+                this._onError?.(reason);
             });
     }
 
-    once() {
-        this.stop();
-        this._fetch();
-    }
-
-    start(refresh: number) {
+    start(refresh?: number): Promise<ResponseData | void> {
         this.stop();
         this._refresh = refresh;
-        refresh && this._fetch();
+        return this._fetch();
+    }
+
+    refresh() {
+        return this.start(this._refresh!);
     }
 
     stop() {

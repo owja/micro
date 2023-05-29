@@ -32,8 +32,9 @@
     "test:ci": "jest --reporters jest-junit summary --collectCoverage --coverageReporters cobertura text-summary",
     "prettier": "prettier -c ./",
     "prettier:fix": "prettier -w ./",
-    "prepack": "npm run prettier && jest",
-    "prepare": "husky install && rm -rf dist && npm run build"
+    "prepack": "rm -rf dist && npm run prettier && jest",
+    "prepare": "npm run build",
+    "postinstall": "husky install"
   },
   "license": "MIT",
   "devDependencies": {
@@ -44,6 +45,7 @@
     "husky": "^8.0.3",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
+    "jest-fetch-mock": "^3.0.3",
     "jest-junit": "^16.0.0",
     "lint-staged": "^13.2.2",
     "microbundle": "^0.15.1",
