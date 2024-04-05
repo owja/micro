@@ -1,7 +1,7 @@
 export interface Options<RequestBody> {
     path: string;
     headers?: HeadersInit;
-    params?: Record<string, string | number>;
+    params?: Record<string, string | number> | URLSearchParams;
     method?: "GET" | "PUT" | "POST" | "DELETE";
     retry?: number;
     body?: RequestBody;
@@ -24,8 +24,24 @@ export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
         const {path, headers, method, body, params} = this._options;
 
         const url = new URL(path);
-        for (const key in params) {
-            url.searchParams.set(key, params[key].toString());
+
+        if (params instanceof URLSearchParams) {
+            const fromPath = new URLSearchParams(url.searchParams);
+            for (const [key, value] of params.entries()) {
+                if (fromPath.has(key)) {
+                    // we overwrite them once if it is in path
+                    url.searchParams.set(key, value);
+                    fromPath.delete(key);
+                } else {
+                    // we append all if not in path, even duplicates
+                    url.searchParams.append(key, value);
+                }
+            }
+        } else {
+            // we overwrite them all if they exist in path or are duplicates this way
+            for (const key in params) {
+                url.searchParams.set(key, params[key].toString());
+            }
         }
 
         this._controller = new AbortController();
@@ -40,7 +56,7 @@ export class MicroRequest<ResponseData = unknown, RequestBody = unknown> {
         })
             .then(async (response): Promise<ResponseData | void> => {
                 if (!response.ok) throw new Error(response.statusText);
-                let result: ResponseData | void;
+                let result: ResponseData | undefined = undefined;
                 try {
                     // MicroRequest only supports json,
                     // and it catches errors here to prevent

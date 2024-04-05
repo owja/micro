@@ -59,7 +59,7 @@ This static method creats a html element of `tagname` and returns it. It is a sh
 
 #### `Micro.create(tagname)`
 
-This results in just the HTMLElement. 
+This results in just the HTMLElement.
 
 #### `Micro.create(tagname, options)`
 
@@ -108,7 +108,7 @@ Attr can be a object containing the attributes which will be set on creation. An
 }
 ```
 
-##### `listener' 
+##### `listener'
 
 The listener property can contain an object which contains callbacks which then will added via `addEventListener` to the new element.
 
@@ -144,8 +144,8 @@ The content parameter can be `string`, one `HTMLElement`, or an `array of HTMLEl
 This method normaly takes one parameter, the element from which all children should be removed. It does not remove `<style>` elements by default. If it should also remove `<style>` Elements it needs to be called with a second parameter set to `true`.
 
 ```typescript
- Micro.clear(this.root); // removes all child elements but keeps style elements
- Micro.clear(this.root, true); // removes all child elements and also any style element
+Micro.clear(this.root); // removes all child elements but keeps style elements
+Micro.clear(this.root, true); // removes all child elements and also any style element
 ```
 
 ## Demo
